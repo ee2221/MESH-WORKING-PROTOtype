@@ -4,17 +4,19 @@ import { OrbitControls, TransformControls, Grid } from '@react-three/drei';
 import { useSceneStore } from '../store/sceneStore';
 import * as THREE from 'three';
 
-const VertexPoints = ({ geometry }) => {
+const VertexPoints = ({ geometry, object }) => {
   const { editMode, selectedElements, startVertexDrag } = useSceneStore();
   const positions = geometry.attributes.position;
   const vertices = [];
+  const worldMatrix = object.matrixWorld;
   
   for (let i = 0; i < positions.count; i++) {
-    vertices.push(new THREE.Vector3(
+    const vertex = new THREE.Vector3(
       positions.getX(i),
       positions.getY(i),
       positions.getZ(i)
-    ));
+    ).applyMatrix4(worldMatrix);
+    vertices.push(vertex);
   }
 
   return editMode === 'vertex' ? (
@@ -107,7 +109,7 @@ const EditModeOverlay = () => {
 
   if (!selectedObject || !editMode || !(selectedObject instanceof THREE.Mesh)) return null;
 
-  return <VertexPoints geometry={selectedObject.geometry} />;
+  return <VertexPoints geometry={selectedObject.geometry} object={selectedObject} />;
 };
 
 const Scene: React.FC = () => {
